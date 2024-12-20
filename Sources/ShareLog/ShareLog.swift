@@ -3,7 +3,7 @@
 
 import Foundation
 
-@available(macOS 12.0, iOS 13.0, *)
+@available(iOS 15.0, *)
 public class ShareLogClient {
 	public nonisolated(unsafe) static var shared: ShareLogClient?
 	

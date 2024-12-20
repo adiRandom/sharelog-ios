@@ -20,7 +20,7 @@ internal struct APIError: Decodable, Error {
 	let code: Int
 }
 
-internal extension Response: Decodable {
+extension Response: Decodable {
 	enum CodingKeys: String, CodingKey {
 		case data
 		case error
