@@ -5,15 +5,15 @@ import Foundation
 
 @available(macOS 12.0, iOS 13.0, *)
 public class ShareLogClient {
-	nonisolated(unsafe) static var shared: ShareLogClient?
+	public nonisolated(unsafe) static var shared: ShareLogClient?
 	
-	static func initialize(baseUrl: String, apiKey: String) throws {
+	public static func setup(baseUrl: String, apiKey: String) throws {
 		try ApiClient.initialize(baseUrl: baseUrl, apiKey: apiKey)
 		
 		shared = ShareLogClient()
 	}
 	
-	func initGlobalErrorHandler() {
+	public func initGlobalErrorHandler() {
 		NSSetUncaughtExceptionHandler { exception in
 			let currentExceptionHandler = NSGetUncaughtExceptionHandler()
 
@@ -29,7 +29,7 @@ public class ShareLogClient {
 		}
 	}
 	
-	func stop(){
+	public func stop(){
 		ShareLogClient.shared = nil
 		ApiClient.shared = nil
 		LogApi.shared = nil
