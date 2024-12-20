@@ -8,7 +8,7 @@
 import Foundation
 
 @available(macOS 12.0, *)
-actor ApiClient{
+internal actor ApiClient{
 	private let session = URLSession.shared
 	private let baseUrl: URL
 	private let apiKey: String

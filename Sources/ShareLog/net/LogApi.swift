@@ -8,7 +8,7 @@
 import Foundation
 
 @available(macOS 12.0, *)
-actor LogApi {
+internal actor LogApi {
 	static var shared: LogApi? = LogApi()
 	
 	static var safeShared: LogApi{

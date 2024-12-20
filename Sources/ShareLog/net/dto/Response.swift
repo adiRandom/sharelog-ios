@@ -5,22 +5,22 @@
 //  Created by Adrian Pascu on 01.12.2024.
 //
 
-enum Response<T: Decodable & Sendable>: Sendable{
+internal enum Response<T: Decodable & Sendable>: Sendable{
 	case success(data: T)
 	case error(error: APIError)
 }
 
-struct EmptyResponse: Decodable, Sendable{
+internal struct EmptyResponse: Decodable, Sendable{
 	
 }
 
 
-struct APIError: Decodable, Error {
+internal struct APIError: Decodable, Error {
 	let message: String
 	let code: Int
 }
 
-extension Response: Decodable {
+internal extension Response: Decodable {
 	enum CodingKeys: String, CodingKey {
 		case data
 		case error
