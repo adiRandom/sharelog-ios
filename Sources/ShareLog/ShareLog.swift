@@ -14,8 +14,10 @@ public class ShareLogClient {
 	}
 	
 	public func initGlobalErrorHandler() {
+		print("Init app")
 		NSSetUncaughtExceptionHandler { exception in
 			let currentExceptionHandler = NSGetUncaughtExceptionHandler()
+			print("Handler")
 
 			ShareLogClient.shared?.handleError(exception: exception)
 			currentExceptionHandler?(exception)
