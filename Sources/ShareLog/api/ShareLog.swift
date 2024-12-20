@@ -7,7 +7,7 @@
 import Foundation
 
 @available(macOS 12.0, *)
-class ShareLog {
+public class ShareLog {
 	nonisolated(unsafe) static var shared: ShareLog?
 	
 	static func initialize(baseUrl: String, apiKey: String) throws {
