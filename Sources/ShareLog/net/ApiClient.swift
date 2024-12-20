@@ -7,7 +7,7 @@
 
 import Foundation
 
-@available(iOS 15.0, *)
+@available(macOS 12.0, iOS 15.0, *)
 internal actor ApiClient{
 	private let session = URLSession.shared
 	private let baseUrl: URL

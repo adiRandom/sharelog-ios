@@ -6,7 +6,7 @@
 //
 
 @propertyWrapper
-internal public struct Lateinit<Value> {
+internal struct Lateinit<Value> {
 	
 	var storage: Value?
 	
