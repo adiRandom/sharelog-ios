@@ -4,7 +4,7 @@
 import Foundation
 
 @available(macOS 12.0, iOS 15.0, *)
-public class ShareLogClient {
+public class ShareLogClient:NSObject{
 	public nonisolated(unsafe) static var shared: ShareLogClient?
 	
 	public static func setup(baseUrl: String, apiKey: String) throws {
@@ -14,26 +14,24 @@ public class ShareLogClient {
 	}
 	
 	public func initGlobalErrorHandler() {
-		print("Init app")
-		NSSetUncaughtExceptionHandler { exception in
-			let currentExceptionHandler = NSGetUncaughtExceptionHandler()
-			print("Handler")
-
-			ShareLogClient.shared?.handleError(exception: exception)
-			currentExceptionHandler?(exception)
-		}
+		CrashEye.add(delegate: self)
 	}
 	
-	private func handleError(exception: NSException) {
-		let stackTrace = exception.callStackSymbols.joined(separator: "\n")
-		Task {
-			try await LogApi.safeShared.log(dto: LogDto(stackTrace: stackTrace ))
-		}
-	}
 	
 	public func stop(){
 		ShareLogClient.shared = nil
 		ApiClient.shared = nil
 		LogApi.shared = nil
 	}
+}
+
+extension ShareLogClient:CrashEyeDelegate{
+	public func crashEyeDidCatchCrash(with model: CrashModel) {
+		let stackTrace = model.callStack
+		print("Log: " + stackTrace)
+		Task {
+			try await LogApi.safeShared.log(dto: LogDto(stackTrace: stackTrace ))
+		}
+	}
+	
 }
