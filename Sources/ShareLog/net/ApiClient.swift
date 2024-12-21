@@ -64,7 +64,7 @@ internal actor ApiClient{
 			request.setValue(value, forHTTPHeaderField: key)
 		}
 		if let body = body {
-			request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+			request.httpBody = try JSONEncoder().encode(body)
 			request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 		}
 		
