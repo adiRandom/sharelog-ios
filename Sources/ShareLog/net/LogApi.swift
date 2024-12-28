@@ -8,7 +8,7 @@
 import Foundation
 
 @available(macOS 12.0, iOS 15.0, *)
-internal actor LogApi {
+internal struct LogApi {
 	static var shared: LogApi? = LogApi()
 	
 	static var safeShared: LogApi{
@@ -21,7 +21,9 @@ internal actor LogApi {
 		}
 	}
 
-	func log(dto: LogDto) async throws -> Response<EmptyResponse> {
-		return try await ApiClient.safeShared.post(endpoint: "/log", body: dto, responseType: EmptyResponse.self)
+	func log(dto: LogDto) throws{
+		try ApiClient.safeShared.post(endpoint: "/log", body: dto, responseType: EmptyResponse.self){_, _ in
+			
+		}
 	}
 }

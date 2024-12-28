@@ -8,7 +8,7 @@
 import Foundation
 
 @available(macOS 12.0, iOS 15.0, *)
-internal actor ApiClient{
+internal struct ApiClient {
 	private let session = URLSession.shared
 	private let baseUrl: URL
 	private let apiKey: String
@@ -16,10 +16,10 @@ internal actor ApiClient{
 	static let API_KEY_HEADER = "ApiKey"
 	static let ERROR_KEY = "error"
 	
-	static var shared: ApiClient?
-	static var safeShared: ApiClient{
+	nonisolated(unsafe) static var shared: ApiClient?
+	static var safeShared: ApiClient {
 		get throws {
-			guard let instance = shared else{
+			guard let instance = shared else {
 				throw ShareLogError(message: "Sharelog not initialized")
 			}
 			
@@ -27,17 +27,16 @@ internal actor ApiClient{
 		}
 	}
 	
-
-	static func initialize(baseUrl: String, apiKey: String) throws{
-		guard let client = ApiClient(baseUrl: baseUrl, apiKey: apiKey) else{
+	static func initialize(baseUrl: String, apiKey: String) throws {
+		guard let client = ApiClient(baseUrl: baseUrl, apiKey: apiKey) else {
 			throw ShareLogError(message: "Invalid base url")
 		}
 		
 		shared = client
 	}
 	
-	init?(baseUrl : String, apiKey: String){
-		guard let url = URL(string: baseUrl) else{
+	init?(baseUrl: String, apiKey: String) {
+		guard let url = URL(string: baseUrl) else {
 			return nil
 		}
 		
@@ -45,17 +44,17 @@ internal actor ApiClient{
 		self.apiKey = apiKey
 	}
 	
-	private func applyAuth(request: inout URLRequest){
+	private func applyAuth(request: inout URLRequest) {
 		request.setValue(apiKey, forHTTPHeaderField: ApiClient.API_KEY_HEADER)
 	}
 	
-	
-	func post<T: Encodable, S: Decodable >(
+	func post<T: Encodable, S: Decodable>(
 		endpoint: String,
 		body: T?,
 		headers: [String: String]? = nil,
-		responseType: S.Type
-	) async throws -> Response<S> {
+		responseType: S.Type,
+		complete: @escaping @Sendable (Response<T>?, Error?) -> Void
+	) throws {
 		let url = baseUrl.appendingPathComponent(endpoint)
 		var request = URLRequest(url: url)
 		
@@ -63,28 +62,44 @@ internal actor ApiClient{
 		headers?.forEach { key, value in
 			request.setValue(value, forHTTPHeaderField: key)
 		}
+		
 		if let body = body {
 			request.httpBody = try JSONEncoder().encode(body)
 			request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 		}
 		
 		applyAuth(request: &request)
-		return try await performRequest(request)
+		performRequest(request, complete: complete)
 	}
-	
 	
 	private func performRequest<T: Decodable>(
-		_ request: URLRequest
-	) async throws -> Response<T> {
-		let (data, response) = try await session.data(for: request)
-
-		// Ensure valid response
-		guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-			throw URLError(.badServerResponse)
+		_ request: URLRequest,
+		complete: @escaping @Sendable (Response<T>?, Error?) -> Void
+	) {
+		session.dataTask(with: request) { data, response, error in
+			// Ensure valid response
+			if error != nil {
+				complete(nil, error)
+			}
+			 
+			guard let httpResponse = response as? HTTPURLResponse else{
+				return complete(nil, ShareLogError(message: "Invalid api response"))
+			}
+							
+			if !((200 ... 299).contains(httpResponse.statusCode)) {
+				complete(nil, URLError(.badServerResponse))
+			}
+			
+			// Decode the response
+			do {
+				if let unwrappedData = data {
+					let decodedData = try JSONDecoder().decode(Response<T>.self, from: unwrappedData)
+					complete(decodedData, nil)
+				}
+			}
+			catch {
+				complete(nil, error)
+			}
 		}
-		
-		// Decode the response
-		return try JSONDecoder().decode(Response<T>.self, from: data)
 	}
-	
 }

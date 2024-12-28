@@ -29,8 +29,10 @@ extension ShareLogClient:CrashEyeDelegate{
 	public func crashEyeDidCatchCrash(with model: CrashModel) {
 		let stackTrace = model.callStack
 		print("Log: " + stackTrace)
-		Task {
-			try await LogApi.safeShared.log(dto: LogDto(stackTrace: stackTrace ))
+		do{
+			try LogApi.safeShared.log(dto: LogDto(stackTrace: stackTrace ))
+		} catch{
+			// Nothing to do if the api call fails since the app in crashing
 		}
 	}
 	
