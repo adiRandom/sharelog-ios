@@ -7,7 +7,6 @@
 
 import Foundation
 
-@available(macOS 12.0, iOS 15.0, *)
 internal struct LogApi {
 	nonisolated(unsafe) static var shared: LogApi? = LogApi()
 	

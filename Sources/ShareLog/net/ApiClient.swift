@@ -7,7 +7,6 @@
 
 import Foundation
 
-@available(macOS 12.0, iOS 15.0, *)
 internal struct ApiClient {
 	private let session = URLSession.shared
 	private let baseUrl: URL

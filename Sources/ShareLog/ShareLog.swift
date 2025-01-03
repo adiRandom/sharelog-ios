@@ -3,9 +3,27 @@
 
 import Foundation
 
-@available(macOS 12.0, iOS 15.0, *)
-public class ShareLogClient:NSObject{
+private let logFileName = "sharelog.json"
+
+public class ShareLogClient: NSObject {
 	public nonisolated(unsafe) static var shared: ShareLogClient?
+	private let logFile = FileLog(fileName: logFileName)
+	
+	override init() {
+		if logFile.exists() {
+			// Send log then delete
+			do {
+				let log = try logFile.read()
+				try LogApi.safeShared.log(dto: log)
+				try logFile.clear()
+			}
+			catch {
+				print("Error sending log file: \(error)")
+			}
+		}
+		
+		logFile.create()
+	}
 	
 	public static func setup(baseUrl: String, apiKey: String) throws {
 		try ApiClient.initialize(baseUrl: baseUrl, apiKey: apiKey)
@@ -17,23 +35,17 @@ public class ShareLogClient:NSObject{
 		CrashEye.add(delegate: self)
 	}
 	
-	
-	public func stop(){
+	public func stop() {
 		ShareLogClient.shared = nil
 		ApiClient.shared = nil
 		LogApi.shared = nil
 	}
 }
 
-extension ShareLogClient:CrashEyeDelegate{
+extension ShareLogClient: CrashEyeDelegate {
 	public func crashEyeDidCatchCrash(with model: CrashModel) {
 		let stackTrace = model.callStack
 		print("Log: " + stackTrace)
-		do{
-			try LogApi.safeShared.log(dto: LogDto(stackTrace: stackTrace ))
-		} catch{
-			// Nothing to do if the api call fails since the app in crashing
-		}
+		logFile.write(log: LogDto(stackTrace: stackTrace))
 	}
-	
 }
