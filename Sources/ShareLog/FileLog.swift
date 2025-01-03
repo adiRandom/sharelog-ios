@@ -13,7 +13,12 @@ package class FileLog {
 	init(fileName: String) {
 		let fileManager = FileManager.default
 		let documentDirectory = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-
+		do {
+			try fileManager.createDirectory(at: documentDirectory, withIntermediateDirectories: true)
+		} catch {
+			print("Error creating directory: \(error)")
+		}
+		
 		fileURL = documentDirectory.appendingPathComponent(fileName)
 	}
 

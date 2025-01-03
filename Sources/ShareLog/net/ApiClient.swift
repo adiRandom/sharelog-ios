@@ -99,6 +99,6 @@ internal struct ApiClient {
 			catch {
 				complete(nil, error)
 			}
-		}
+		}.resume()
 	}
 }
